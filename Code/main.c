@@ -5,9 +5,22 @@
  * Created on March 3, 2014, 12:30 AM
  */
 
+ 
+ /*******************************************************************************
+ *                          Include Files
+ ******************************************************************************/
+ 
 #include <stdio.h>
 #include <stdlib.h>
 #include <pic16f876.h>
+
+
+/*******************************************************************************
+ *                          Definitions
+ ******************************************************************************/
+
+#define ASCII_OFFSET 48
+
 
 /*******************************************************************************
  *                          Configuration Bits
@@ -21,16 +34,67 @@
 #pragma config  CPD=OFF     // code protection off
 #pragma config  WRT=ON      //
 
-#define ASCII_OFFSET 48
+
+/*******************************************************************************
+ *                          Global Variables
+ ******************************************************************************/
 
 char LCDString[17] = "                ";
 
+
+/*******************************************************************************
+ *                          Function Prototypes
+ ******************************************************************************/
+
+void delay();
+void writeLCDCommand(char d);
+void writeLCDData(char c);
+void initLCD();
+void writeLCDString();
+void updateLCDData(unsigned int mode ,unsigned int temp);
+
+
+/*******************************************************************************
+ *                          	MAIN
+ ******************************************************************************/
+ 
+ /*
+ * 
+ */
+int main() {
+
+    // PORTC = DB7:DB0
+    // PORTA 0:E, 1:RS
+
+    PORTA = 0;
+    PORTB = 0;
+    TRISA = 0;
+    TRISC = 0;
+    ADCON1 = 0x06;
+
+    initLCD();
+    updateLCDData(2,247);
+
+    while(1)
+    {
+        
+    }
+
+    return (EXIT_SUCCESS);
+}
+ 
+ 
+/*******************************************************************************
+ *                             Other Functions
+ ******************************************************************************/
+ 
 void delay()
 {
     unsigned int i;
     for (i=0;i<600;i++);
     return;
 }
+
 
 void writeLCDCommand(char d)
 {
@@ -46,6 +110,7 @@ void writeLCDCommand(char d)
     PORTA = 0b00;
 }
 
+
 void writeLCDData(char c)
 {
     delay();
@@ -60,6 +125,7 @@ void writeLCDData(char c)
     PORTA = 0b00;
 }
 
+
 void initLCD()
 {
     writeLCDCommand(0b00000001);  // clear display
@@ -70,6 +136,7 @@ void initLCD()
     writeLCDCommand(0b00111000);
     writeLCDCommand(0b00000001); // clear display
 }
+
 
 void writeLCDString()
 {
@@ -85,6 +152,7 @@ void writeLCDString()
         writeLCDData(LCDString[i+8]);
     }
 }
+
 
 void updateLCDData(unsigned int mode ,unsigned int temp)
 {
@@ -152,9 +220,7 @@ void updateLCDData(unsigned int mode ,unsigned int temp)
         LCDString[7] = ' ';
         LCDString[8] = ' ';
     }
-
-
-
+	
     LCDString[13] = temp%10 + ASCII_OFFSET;
     temp/=10;
     LCDString[12] = temp%10 + ASCII_OFFSET;
@@ -165,29 +231,3 @@ void updateLCDData(unsigned int mode ,unsigned int temp)
 
     writeLCDString();
 }
-
-/*
- * 
- */
-int main() {
-
-    // PORTC = DB7:DB0
-    // PORTA 0:E, 1:RS
-
-    PORTA = 0;
-    PORTB = 0;
-    TRISA = 0;
-    TRISC = 0;
-    ADCON1 = 0x06;
-
-    initLCD();
-    updateLCDData(2,247);
-
-    while(1)
-    {
-        
-    }
-
-    return (EXIT_SUCCESS);
-}
-
