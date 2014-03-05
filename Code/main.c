@@ -24,6 +24,7 @@
 /*******************************************************************************
  *                          Configuration Bits
  ******************************************************************************/
+
 #pragma config  FOSC=HS     // high speed crystal
 #pragma config  WDTE=OFF    // watchdog timer off
 #pragma config  PWRTE=OFF   // 

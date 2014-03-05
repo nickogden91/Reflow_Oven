@@ -1,5 +1,5 @@
 /*
- * File:   lcd.h
+ * File:   lcd.c
  * Author: nick
  *
  * 
