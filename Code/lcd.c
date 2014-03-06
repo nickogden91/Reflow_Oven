@@ -37,7 +37,8 @@ void lcdDelay()
 void writeLCDCommand(char d)
 {
     lcdDelay();
-    PORTC = d;
+    PORTB = d & 0b00111111;
+    PORTC = d & 0b11000000;
     PORTA = 0b00;
     PORTA = 0b00;
     PORTA = 0b01;
@@ -49,10 +50,11 @@ void writeLCDCommand(char d)
 }
 
 
-void writeLCDData(char c)
+void writeLCDData(char d)
 {
     lcdDelay();
-    PORTC = c;
+    PORTB = d & 0b00111111;
+    PORTC = d & 0b11000000;
     PORTA = 0b00;
     PORTA = 0b10;
     PORTA = 0b11;

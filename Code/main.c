@@ -59,7 +59,9 @@ int main() {
 
     PORTA = 0;
     PORTB = 0;
+    PORTC = 0;
     TRISA = 0;
+    TRISB = 0;
     TRISC = 0;
     ADCON1 = 0x06;
 
@@ -68,7 +70,7 @@ int main() {
 
     while(1)
     {
-        
+        PORTA = 0b001;
     }
 
     return (EXIT_SUCCESS);
