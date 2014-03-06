@@ -16,6 +16,7 @@
 #include "lcd.h"
 #include "spi.h"
 #include "thermocouple.h"
+#include "timer.h"
 
 /*******************************************************************************
  *                          Definitions
@@ -39,6 +40,8 @@
 /*******************************************************************************
  *                          Global Variables
  ******************************************************************************/               
+
+unsigned int interrupt_count;
 
 
 /*******************************************************************************
@@ -72,18 +75,17 @@ int main() {
     TRISC = 0b00010000;
     ADCON1 = 0x06;
 
-    unsigned int t;
+    interrupt_count = 0;
+
     delay();
     delay();
     initLCD();
     initSPI();
+    initTimer();
    // updateLCDData(2,246);
 
     while(1)
     {
-        delay();
-        t = getTemp();
-        updateLCDData(0, t);
     }
 
     return (EXIT_SUCCESS);
@@ -93,3 +95,16 @@ int main() {
 /*******************************************************************************
  *                             Other Functions
  ******************************************************************************/
+
+void __interrupt ISR()
+{
+    timerISR();
+    interrupt_count++;
+    if (interrupt_count == 10)
+    {
+        interrupt_count = 0;
+        unsigned int t;
+        t = getTemp();
+        updateLCDData(0, t);
+    }
+}
