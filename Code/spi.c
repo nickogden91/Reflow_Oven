@@ -15,31 +15,21 @@
 #include <pic16f876.h>
 #include "spi.h"
 
-/*******************************************************************************
- *                          Global Variables
- ******************************************************************************/
-
 
 /*******************************************************************************
  *                             Other Functions
  ******************************************************************************/
 
-void SPIDelay()
-{
-    unsigned int i;
-    for (i=0;i<12;i++);
-    return;
-}
-
 void initSPI()
 {
     SSPCON =  0b00100010;
-
 }
 
-void SPIReceive()
+unsigned char SPIReceive()
 {
     SSPBUF = 0;  // clock 8 bits
+	while (!(SSPSTAT & 0b00000001));  // wait for transfer to complete
+	return SSPBUF;
 }
 
 

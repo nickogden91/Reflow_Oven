@@ -31,17 +31,8 @@ unsigned int getTemp()
     unsigned int t=0;
 
     PORTA = 0b00000000;
-    SPIDelay();
-    SPIReceive();
-    SPIDelay();
-    t |= (SSPBUF & 0b01111111) << 4;
-    SPIReceive();
-    SPIDelay();
-    t |= (SSPBUF & 0b11110000) >> 4;
-    SPIReceive();
-    SPIDelay();
-    SPIReceive();
-    SPIDelay();
+    t |= (SPIReceive() & 0b01111111) << 4;
+    t |= (SPIReceive() & 0b11110000) >> 4;
     PORTA = 0b00000100;
 
     return t;
