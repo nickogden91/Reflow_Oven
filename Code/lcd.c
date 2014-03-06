@@ -33,20 +33,31 @@ void lcdDelay()
     return;
 }
 
+/*
+Setting a bit
+number |= 1 << x;
+
+Clearing a bit
+number &= ~(1 << x);
+
+Toggling a bit
+number ^= 1 << x;
+ * */
+
 
 void writeLCDCommand(char d)
 {
     lcdDelay();
     PORTB = d & 0b00111111;
     PORTC = d & 0b11000000;
-    PORTA = 0b00;
-    PORTA = 0b00;
-    PORTA = 0b01;
-    PORTA = 0b01;
-    PORTA = 0b01;
-    PORTA = 0b01;
-    PORTA = 0b00;
-    PORTA = 0b00;
+    PORTA = 0b100;
+    PORTA = 0b100;
+    PORTA = 0b101;
+    PORTA = 0b101;
+    PORTA = 0b101;
+    PORTA = 0b101;
+    PORTA = 0b100;
+    PORTA = 0b100;
 }
 
 
@@ -55,14 +66,14 @@ void writeLCDData(char d)
     lcdDelay();
     PORTB = d & 0b00111111;
     PORTC = d & 0b11000000;
-    PORTA = 0b00;
-    PORTA = 0b10;
-    PORTA = 0b11;
-    PORTA = 0b11;
-    PORTA = 0b11;
-    PORTA = 0b11;
-    PORTA = 0b10;
-    PORTA = 0b00;
+    PORTA = 0b100;
+    PORTA = 0b110;
+    PORTA = 0b111;
+    PORTA = 0b111;
+    PORTA = 0b111;
+    PORTA = 0b111;
+    PORTA = 0b110;
+    PORTA = 0b100;
 }
 
 
