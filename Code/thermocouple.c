@@ -29,14 +29,14 @@ unsigned int getTemp()
 {
     unsigned int t=0;
 
-    PORTA = 0b00000000;  // assert ~CS
-	byte1 = SPIReceive()
-	byte2 = SPIReceive()
+    PORTA &= 0b11111011;  // assert ~CS
+    unsigned char byte1 = SPIReceive();
+    unsigned char byte2 = SPIReceive();
 		
     t |= (byte1 & 0b01111111) << 4;
     t |= (byte2 & 0b11110000) >> 4;
 	
-    PORTA = 0b00000100; // deassert ~CS
+    PORTA |= 0b00000100; // deassert ~CS
 	
 	// check fault bit for error status
 	if (byte2 & 0b00000001)
