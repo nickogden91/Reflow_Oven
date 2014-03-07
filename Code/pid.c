@@ -66,7 +66,7 @@ int pidStep(int dt ,int currentVal)
     else if (IVal < -2)
         IVal = -2;
 
-    DVal = Kd * ((currentVal - previousVal)/dt) * error;
+    DVal = -1 * Kd * (currentVal - previousVal)/dt;
     previousVal = currentVal;
     return PVal + IVal + DVal;
 }
