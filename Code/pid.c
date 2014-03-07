@@ -1,0 +1,71 @@
+/*
+ * File:   pid.c
+ * Author: nick
+ *
+ *
+ */
+
+
+ /******************************************************************************
+ *                          Include Files
+ ******************************************************************************/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pic16f876.h>
+#include "pid.h"
+
+ /******************************************************************************
+ *                          Global Variables
+ ******************************************************************************/
+
+int Kp;
+int Ki;
+int Kd;
+
+int PVal;
+int IVal;
+int DVal;
+
+int previousVal;
+int setPoint;
+
+
+/*******************************************************************************
+ *                             Other Functions
+ ******************************************************************************/
+
+void initPID(int p, int i, int d)
+{
+    Kp = p;
+    Ki = i;
+    Kd = d;
+
+    PVal = 0;
+    IVal = 0;
+    DVal = 0;
+    
+    previousVal = 0;
+}
+
+void setPIDVal(int s)
+{
+    setPoint = s;
+}
+
+int pidStep(int dt ,int currentVal)
+{
+    int error;
+    error = setPoint - currentVal;
+    PVal = Kp * error;
+    IVal += Ki * error * dt;
+
+    // integrator windup prevention
+    if (IVal > 10)
+        IVal = 10;
+    else if (IVal < -10)
+        IVal = -10;
+
+    DVal = Kd * ((currentVal - previousVal)/dt) * error;
+    return PVal + IVal + DVal;
+}

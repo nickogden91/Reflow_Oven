@@ -17,6 +17,7 @@
 #include "spi.h"
 #include "thermocouple.h"
 #include "timer.h"
+#include "pid.h"
 
 /*******************************************************************************
  *                          Definitions
@@ -42,12 +43,16 @@
  ******************************************************************************/               
 
 unsigned int interrupt_count;
+int pid;
 
 
 /*******************************************************************************
  *                          Function Prototypes
  ******************************************************************************/
 
+void heaterOn();
+void heaterOff();
+void delay();
 
 /*******************************************************************************
  *                          	MAIN
@@ -56,12 +61,6 @@ unsigned int interrupt_count;
  /*
  * 
  */
-
-void delay(){
-    unsigned long int i;
-    for (i=0; i<100000; i++);
-}
-
 int main() {
 
     // PORTC = DB7:DB0
@@ -79,9 +78,12 @@ int main() {
     TRISC = 0b00010000;
     ADCON1 = 0x06;
     delay();
+    initPID(1,1,1);
     initLCD();
     initSPI();
     initTimer();
+
+    setPIDVal(40);
 
     while(1)
     {
@@ -104,6 +106,28 @@ void __interrupt ISR()
         interrupt_count = 0;
         unsigned int t;
         t = getTemp();
+        pid = pidStep(1,t);
+        if (pid > 0)
+            heaterOn();
+        else
+            heaterOff();
+
         updateLCDData(0, t);
     }
+}
+
+void heaterOn()
+{
+    PORTA |= 0b00001000;
+}
+
+void heaterOff()
+{
+    PORTA &= 0b11110111;
+}
+
+
+void delay(){
+    unsigned long int i;
+    for (i=0; i<100000; i++);
 }
