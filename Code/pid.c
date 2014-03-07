@@ -61,11 +61,12 @@ int pidStep(int dt ,int currentVal)
     IVal += Ki * error * dt;
 
     // integrator windup prevention
-    if (IVal > 10)
-        IVal = 10;
-    else if (IVal < -10)
-        IVal = -10;
+    if (IVal > 2)
+        IVal = 2;
+    else if (IVal < -2)
+        IVal = -2;
 
     DVal = Kd * ((currentVal - previousVal)/dt) * error;
+    previousVal = currentVal;
     return PVal + IVal + DVal;
 }
