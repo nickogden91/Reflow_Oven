@@ -22,12 +22,12 @@
 
 void initSPI()
 {
-    SSPCON =  0b00100010;
+	SSPCON =  0b00100010;
 }
 
 unsigned char SPIReceive()
 {
-    SSPBUF = 0;  // clock 8 bits
+	SSPBUF = 0;  // clock 8 bits
 	while (!(SSPSTAT & 0b00000001));  // wait for transfer to complete
 	return SSPBUF;
 }
