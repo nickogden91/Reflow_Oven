@@ -44,20 +44,24 @@ Toggling a bit
 number ^= 1 << x;
  * */
 
+// PORTA 0:E, 1:RS
 
 void writeLCDCommand(char d)
 {
     lcdDelay();
     PORTB = d & 0b00111111;
     PORTC = d & 0b11000000;
-    PORTA = 0b100;
-    PORTA = 0b100;
-    PORTA = 0b101;
-    PORTA = 0b101;
-    PORTA = 0b101;
-    PORTA = 0b101;
-    PORTA = 0b100;
-    PORTA = 0b100;
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    PORTA |= 0b00000001;
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    PORTA &= 0b11111110;
+    asm("nop");
+    asm("nop");
+    asm("nop");
 }
 
 
@@ -66,14 +70,19 @@ void writeLCDData(char d)
     lcdDelay();
     PORTB = d & 0b00111111;
     PORTC = d & 0b11000000;
-    PORTA = 0b100;
-    PORTA = 0b110;
-    PORTA = 0b111;
-    PORTA = 0b111;
-    PORTA = 0b111;
-    PORTA = 0b111;
-    PORTA = 0b110;
-    PORTA = 0b100;
+    PORTA |= 0b00000010;
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    PORTA |= 0b00000001;
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    PORTA &= 0b11111110;
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    PORTA &= 0b11111101;
 }
 
 
