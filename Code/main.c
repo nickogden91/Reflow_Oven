@@ -44,7 +44,9 @@
 
 unsigned int interrupt_count;
 int pid;
-
+int currentTemp;
+unsigned int currentState;
+unsigned int elapsedTime;
 
 /*******************************************************************************
  *                          Function Prototypes
@@ -70,7 +72,7 @@ int main() {
     interrupt_count = 0;
 
 	// initialize hardware
-	PORTA = 0;
+    PORTA = 0;
     PORTB = 0;
     PORTC = 0;
     TRISA = 0;
@@ -83,11 +85,36 @@ int main() {
     initSPI();
     initTimer();
 
-    setPIDVal(40);
+    
+    // state machine
+    elapsedTime = 0;
+    currentState = 0;
+    setPIDVal(150);
+    while (currentTemp < 150);
+    while (elapsedTime < 120);
 
-    while(1)
-    {
-    }
+    elapsedTime = 0;
+    currentState = 1;
+    setPIDVal(180);
+    while (currentTemp < 180);
+    while (elapsedTime < 60);
+
+    elapsedTime = 0;
+    currentState = 2;
+    setPIDVal(230);
+    while (currentTemp < 230);
+    while (elapsedTime < 45);
+
+    elapsedTime = 0;
+    currentState = 3;
+    setPIDVal(50);
+    while (currentTemp > 50);
+
+    elapsedTime = 0;
+    currentState = 4;
+    setPIDVal(0);
+    while (1);
+
 
     return (EXIT_SUCCESS);
 }
@@ -103,16 +130,16 @@ void __interrupt ISR()
     interrupt_count++;
     if (interrupt_count == 10)
     {
+        elapsedTime++;
         interrupt_count = 0;
-        unsigned int t;
-        t = getTemp();
-        pid = pidStep(1,t);
+        currentTemp = getTemp();
+        pid = pidStep(1,currentTemp);
         if (pid > 0)
             heaterOn();
         else
             heaterOff();
 
-        updateLCDData(0, t);
+        updateLCDData(currentState, currentTemp);
     }
 }
 
