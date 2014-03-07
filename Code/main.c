@@ -58,8 +58,8 @@ unsigned int interrupt_count;
  */
 
 void delay(){
-    unsigned int i;
-    for (i=0; i<60000; i++);
+    unsigned long int i;
+    for (i=0; i<100000; i++);
 }
 
 int main() {
@@ -67,22 +67,21 @@ int main() {
     // PORTC = DB7:DB0
     // PORTA 0:E, 1:RS
 
-    PORTA = 0;
+	//initialize variables
+    interrupt_count = 0;
+
+	// initialize hardware
+	PORTA = 0;
     PORTB = 0;
     PORTC = 0;
     TRISA = 0;
     TRISB = 0;
     TRISC = 0b00010000;
     ADCON1 = 0x06;
-
-    interrupt_count = 0;
-
-    delay();
     delay();
     initLCD();
     initSPI();
     initTimer();
-   // updateLCDData(2,246);
 
     while(1)
     {
