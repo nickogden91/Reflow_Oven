@@ -26,10 +26,8 @@ void setPIDVal(int s);
 int pidStep(int dt, int currentVal);
 
 
-
 #ifdef	__cplusplus
 }
 #endif
 
 #endif	/* PID_H */
-

@@ -12,7 +12,7 @@
  
 #include <stdio.h>
 #include <stdlib.h>
-#include <pic16f876.h>
+#include <pic16f877.h>
 #include "lcd.h"
 #include "spi.h"
 #include "thermocouple.h"
@@ -72,17 +72,11 @@ int main() {
     interrupt_count = 0;
 
 	// initialize hardware
-    PORTA = 0;
-    PORTB = 0;
-    PORTC = 0;
-    TRISA = 0;
-    TRISB = 0;
-    TRISC = 0b00010000;
-    ADCON1 = 0x06;
-    delay();
+    ADCON1 = 0x06;  // set port A as digital output
+    TRISA &= 0b11110111; // setup A3 as SSR control
     initPID(1,1,1);
     initLCD();
-    initSPI();
+    initThermocouple();
     initTimer();
 
     

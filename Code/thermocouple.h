@@ -21,6 +21,7 @@ extern "C" {
  *                          Function Prototypes
  ******************************************************************************/
 
+void initThermocouple();
 unsigned int getTemp();
 
 
@@ -29,4 +30,3 @@ unsigned int getTemp();
 #endif
 
 #endif	/* THERMOCOUPLE_H */
-

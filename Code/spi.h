@@ -30,4 +30,3 @@ unsigned char SPIReceive();
 #endif
 
 #endif	/* SPI_H */
-

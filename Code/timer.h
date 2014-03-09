@@ -34,4 +34,3 @@ void timerISR();
 #endif
 
 #endif	/* TIMER_H */
-

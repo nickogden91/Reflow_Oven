@@ -10,10 +10,9 @@
  *                          Include Files
  ******************************************************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <pic16f876.h>
+#include <pic16f877.h>
 #include "lcd.h"
+
 
 /*******************************************************************************
  *                          Global Variables
@@ -44,50 +43,48 @@ Toggling a bit
 number ^= 1 << x;
  * */
 
-// PORTA 0:E, 1:RS
+// PORTA 0:RS, 1:R/~W ,2:E
 
 void writeLCDCommand(char d)
 {
     lcdDelay();
-    PORTB = d & 0b00111111;
-    PORTC = d & 0b11000000;
+    PORTD = d;
+    PORTB &= 0b11111110; // select command registers
+    PORTB &= 0b11111101; // set to write mode
     asm("nop");
     asm("nop");
     asm("nop");
-    PORTA |= 0b00000001;
+    PORTB |= 0b00000100; // set enable pin high
     asm("nop");
     asm("nop");
     asm("nop");
-    PORTA &= 0b11111110;
-    asm("nop");
-    asm("nop");
-    asm("nop");
+    PORTB &= 0b11111011;  // set enable pin low
 }
 
 
 void writeLCDData(char d)
 {
     lcdDelay();
-    PORTB = d & 0b00111111;
-    PORTC = d & 0b11000000;
-    PORTA |= 0b00000010;
+    PORTD = d;
+    PORTB |= 0b00000001; // select data registers
+    PORTB &= 0b11111101; // set to write mode
     asm("nop");
     asm("nop");
     asm("nop");
-    PORTA |= 0b00000001;
+    PORTB |= 0b00000100; // set enable pin high
     asm("nop");
     asm("nop");
     asm("nop");
-    PORTA &= 0b11111110;
-    asm("nop");
-    asm("nop");
-    asm("nop");
-    PORTA &= 0b11111101;
+    PORTB &= 0b11111011;  // set enable pin low
 }
 
 
 void initLCD()
 {
+    PORTB &= 0b11111000; // clear bits
+    TRISB &= 0b11111000; // set B(0:2) as output
+    PORTD = 0; // clear bits
+    TRISD = 0; // set portD as output
     writeLCDCommand(0b00000001);  // clear display
     writeLCDCommand(0b00000010);
     writeLCDCommand(0b00000100);

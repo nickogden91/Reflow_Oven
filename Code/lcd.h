@@ -37,4 +37,3 @@ void updateLCDData(unsigned int mode ,unsigned int temp);
 #endif
 
 #endif	/* LCD_H */
-
