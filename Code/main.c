@@ -50,10 +50,10 @@
  ******************************************************************************/               
 
 unsigned int interrupt_count;
-int pid;
 int currentTemp;
 unsigned int state;
 unsigned int elapsedTime;
+unsigned int buttonTimeout;
 
 /*******************************************************************************
  *                          Function Prototypes
@@ -90,6 +90,8 @@ int main() {
     initThermocouple();
     initTimer();
 
+    setStatusLEDs(1,0,0);
+
     elapsedTime = 0;
     state = RESET;
 
@@ -99,7 +101,7 @@ int main() {
         {
             case RESET:
                 setPIDVal(0);
-                setStatusLEDs(0,0,0);
+                setStatusLEDs(1,0,0);
                 if (buttonPressed())
                 {
                     elapsedTime = 0;
@@ -110,8 +112,8 @@ int main() {
                 break;
 
             case PRE_HEAT:
+                setStatusLEDs(1,1,0);
                 setPIDVal(150);
-                setStatusLEDs(1,0,0);
                 if ((elapsedTime >= 120) && (currentTemp >= 145))
                 {
                     elapsedTime = 0;
@@ -125,7 +127,6 @@ int main() {
 
             case SOAK:
                 setPIDVal(180);
-                setStatusLEDs(1,1,0);
                 if ((elapsedTime >= 60) && (currentTemp >= 175))
                 {
                     elapsedTime = 0;
@@ -139,7 +140,6 @@ int main() {
 
             case REFLOW:
                 setPIDVal(210);
-                setStatusLEDs(1,0,1);
                 if ((elapsedTime >= 30) && (currentTemp >= 205))
                 {
                     elapsedTime = 0;
@@ -153,7 +153,6 @@ int main() {
 
             case COOL_DOWN:
                 setPIDVal(0);
-                setStatusLEDs(1,1,0);
                 if (currentTemp < 100)
                 {
                     elapsedTime = 0;
@@ -174,6 +173,7 @@ int main() {
                 break;
 
             case ERROR:
+                setPIDVal(0);
                 setStatusLEDs(0,0,1);
                 if (buttonPressed())
                     state = RESET;
@@ -197,8 +197,10 @@ int main() {
 
 void __interrupt ISR()
 {
+    int pid;
     timerISR();
     interrupt_count++;
+    buttonTimeout++;
     if (interrupt_count == 10)
     {
         elapsedTime++;
@@ -239,6 +241,7 @@ void initStatusLEDs()
 void initControlButton()
 {
     TRISA |= 0b00000001;
+    buttonTimeout = 0;
 }
 
 void setStatusLEDs(unsigned int green, unsigned int yellow, unsigned int red)
@@ -262,7 +265,14 @@ void setStatusLEDs(unsigned int green, unsigned int yellow, unsigned int red)
 
 unsigned int buttonPressed()
 {
-    return !(PORTA & 0b00000001);
+    if ((buttonTimeout >= 10) && !(PORTA & 0b00000001))
+    {
+        buttonTimeout = 0;
+        return 1;
+    }
+    else
+        return 0;  //false
+
 }
 
 void waitForButtonPress()
