@@ -10,18 +10,13 @@
  *                          Include Files
  ******************************************************************************/
  
-#include <stdio.h>
-#include <stdlib.h>
 #include <pic16f877.h>
 #include "lcd.h"
 #include "spi.h"
 #include "thermocouple.h"
 #include "timer.h"
 #include "pid.h"
-
-/*******************************************************************************
- *                          Definitions
- ******************************************************************************/
+#include "main.h"
 
 
 /*******************************************************************************
@@ -30,50 +25,40 @@
 
 #pragma config  FOSC=HS     // high speed crystal
 #pragma config  WDTE=OFF    // watchdog timer off
-#pragma config  PWRTE=OFF   // 
-#pragma config  CP=OFF      //
-#pragma config  BOREN=ON   // brownout reset off
+#pragma config  PWRTE=OFF   // power-up timer disabled
+#pragma config  CP=OFF      // code protection off
+#pragma config  BOREN=ON    // brownout reset on
 #pragma config  LVP=OFF     // low-voltage programming off
 #pragma config  CPD=OFF     // code protection off
-#pragma config  WRT=ON      //
+#pragma config  WRT=ON      // program memory write enabled
 
-#define RESET 0
-#define PRE_HEAT 1
-#define SOAK 2
-#define REFLOW 3
-#define COOL_DOWN 4
-#define DONE 5
-#define ERROR 6
 
 /*******************************************************************************
  *                          Global Variables
  ******************************************************************************/               
 
-unsigned int interrupt_count;
-int currentTemp;
-unsigned int state;
-unsigned int elapsedTime;
+unsigned int interrupt_count;  // number of 0.1s intterupts (resets every 1s)
+int currentTemp;  // the current temperature read by the thermocouple
+unsigned int state;  // the current state of the state machine
+unsigned int elapsedTime; // elapsed time for the current mode
 unsigned int buttonTimeout;
 
-/*******************************************************************************
- *                          Function Prototypes
- ******************************************************************************/
-
-void heaterOn();
-void heaterOff();
-void delay();
-void initStatusLEDs();
-void initControlButton();
-void setStatusLEDs(unsigned int green, unsigned int yellow, unsigned int red);
-unsigned int buttonPressed();
-void waitForButtonPress();
 
 /*******************************************************************************
  *                          	MAIN
  ******************************************************************************/
  
- /*
- * 
+ /**
+ *  \brief   Main function
+ *
+ *  This function initializes the reflow oven and runs a state machine
+ *  which generates the approved solder reflow profile for leaded solder.
+ *
+ *  \param  None
+ *
+ *  \return This function loops forever and does not return.
+ *
+ *  \note   None
  */
 int main() {
 
@@ -81,8 +66,7 @@ int main() {
     interrupt_count = 0;
 
     // initialize hardware
-    ADCON1 = 0x06;  // set port A as digital output
-    TRISA &= 0b11111101; // setup A3 as SSR control
+    initHeater();
     initControlButton();
     initStatusLEDs();
     initPID(1,1,1);
@@ -187,7 +171,6 @@ int main() {
         }
     }
 
-    return (EXIT_SUCCESS);
 }
  
  
@@ -195,6 +178,20 @@ int main() {
  *                             Other Functions
  ******************************************************************************/
 
+/**
+ *  \brief   Interrupt service routine
+ *
+ *  This function is called when the timer intterrupt is triggered
+ *  every 0.1s.  Every 1s the current temperature is read from the
+ *  thermocouple and the heater is triggered based on the current
+ *  state of the PID controller.
+ *
+ *  \param  None
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
 void __interrupt ISR()
 {
     int pid;
@@ -216,34 +213,96 @@ void __interrupt ISR()
     }
 }
 
+
+/**
+ *  \brief   Initialize toaster oven heater
+ *
+ *  This function initializes the registers associated with the toaster
+ *  oven heater and solid state relay
+ *
+ *  \param  None
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
+void initHeater()
+{
+    PORTA &= 0b11111101;
+    ADCON1 = 0x06;  // set port A as digital output
+    TRISA &= 0b11111101;  // setup A3 as SSR control
+}
+
+
+/**
+ *  \brief   Toaster oven heater on
+ *
+ *  This function turns on all four heating elements in the toaster.
+ *  oven
+ *
+ *  \param  None
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
 void heaterOn()
 {
     PORTA |= 0b00000010;
 }
 
+
+/**
+ *  \brief   Toaster oven heater off
+ *
+ *  This function turns off all four heating elements in the toaster.
+ *  oven
+ *
+ *  \param  None
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
 void heaterOff()
 {
     PORTA &= 0b11111101;
 }
 
 
-void delay(){
-    unsigned long int i;
-    for (i=0; i<100000; i++);
-}
-
+/**
+ *  \brief   Status LED initialization
+ *
+ *  This function initializes the registers associated with the
+ *  status LEDs.
+ *
+ *  \param  None
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
 void initStatusLEDs()
 {
     TRISB &= 0b11000111;
     setStatusLEDs(0,0,0);
 }
 
-void initControlButton()
-{
-    TRISA |= 0b00000001;
-    buttonTimeout = 0;
-}
 
+/**
+ *  \brief   Set status LEDs
+ *
+ *  This function individually sets the state of the green,
+ *  yellow, and red status LED.
+ *
+ *  \param (unsigned int) green: 0 = green LED off, otherwise green LED on
+ *         (unsigned int) yellow: 0 = green LED off, otherwise green LED on
+ *         (unsigned int) red: 0 = green LED off, otherwise green LED on
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
 void setStatusLEDs(unsigned int green, unsigned int yellow, unsigned int red)
 {
     if (green)
@@ -263,6 +322,37 @@ void setStatusLEDs(unsigned int green, unsigned int yellow, unsigned int red)
 
 }
 
+
+/**
+ *  \brief   Control button initialization
+ *
+ *  This function initializes the registers associated with the
+ *  control button.
+ *
+ *  \param  None
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
+void initControlButton()
+{
+    TRISA |= 0b00000001;
+    buttonTimeout = 0;
+}
+
+
+/**
+ *  \brief   Button pressed
+ *
+ *  This function returns the state of the control button
+ *
+ *  \param  None
+ *
+ *  \return true if button is pressed, false otherwise
+ *
+ *  \note   None
+ */
 unsigned int buttonPressed()
 {
     if ((buttonTimeout >= 10) && !(PORTA & 0b00000001))
@@ -273,9 +363,4 @@ unsigned int buttonPressed()
     else
         return 0;  //false
 
-}
-
-void waitForButtonPress()
-{
-    while (!(buttonPressed()));
 }
