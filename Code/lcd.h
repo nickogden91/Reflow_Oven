@@ -25,9 +25,9 @@ extern "C" {
  ******************************************************************************/
 
 void lcdDelay();
-void writeLCDCommand(char d);
-void writeLCDData(char c);
 void initLCD();
+void writeLCDCommand(char d);
+void writeLCDData(char d);
 void writeLCDString();
 void updateLCDData(unsigned int mode ,unsigned int temp);
 

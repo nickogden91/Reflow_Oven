@@ -18,7 +18,10 @@
  *                          Global Variables
  ******************************************************************************/
 
+// LCD buffer for storing string to be displayed
 char LCDString[17] = "                ";
+
+// Set of strings to be displayed corresponding to current mode of reflow oven
 const char modeString[7][10] =
 {
     "Reset    ",
@@ -30,10 +33,23 @@ const char modeString[7][10] =
     "Error    "
 };
 
+
 /*******************************************************************************
  *                             Other Functions
  ******************************************************************************/
 
+/**
+ *  \brief   LCD delay
+ *
+ *  This function delays the LCD for a small amount of time to avoid
+ *  having to read the busy flag
+ *
+ *  \param  None
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
 void lcdDelay()
 {
     unsigned int i;
@@ -41,53 +57,20 @@ void lcdDelay()
     return;
 }
 
-/*
-Setting a bit
-number |= 1 << x;
 
-Clearing a bit
-number &= ~(1 << x);
-
-Toggling a bit
-number ^= 1 << x;
- * */
-
-// PORTA 0:RS, 1:R/~W ,2:E
-
-void writeLCDCommand(char d)
-{
-    lcdDelay();
-    PORTD = d;
-    PORTB &= 0b11111110; // select command registers
-    PORTB &= 0b11111101; // set to write mode
-    asm("nop");
-    asm("nop");
-    asm("nop");
-    PORTB |= 0b00000100; // set enable pin high
-    asm("nop");
-    asm("nop");
-    asm("nop");
-    PORTB &= 0b11111011;  // set enable pin low
-}
-
-
-void writeLCDData(char d)
-{
-    lcdDelay();
-    PORTD = d;
-    PORTB |= 0b00000001; // select data registers
-    PORTB &= 0b11111101; // set to write mode
-    asm("nop");
-    asm("nop");
-    asm("nop");
-    PORTB |= 0b00000100; // set enable pin high
-    asm("nop");
-    asm("nop");
-    asm("nop");
-    PORTB &= 0b11111011;  // set enable pin low
-}
-
-
+/**
+ *  \brief   Initialize LCD
+ *
+ *  This function initializes the PIC registers associated with the LCD
+ *  and then sends the appropriate commands to the LCD to initialize the
+ *  LCD for use.
+ *
+ *  \param  None
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
 void initLCD()
 {
     PORTB &= 0b11111000; // clear bits
@@ -104,6 +87,73 @@ void initLCD()
 }
 
 
+/**
+ *  \brief   Write LCD Command
+ *
+ *  This function sends a commend to the LCD
+ *
+ *  \param  (byte) d: command to be sent to the LCD
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
+void writeLCDCommand(char d)
+{
+    lcdDelay();
+    PORTD = d;
+    PORTB &= 0b11111110; // deassert RS (register select) to select command register
+    PORTB &= 0b11111101; // set R/~W to 0 (write)
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    PORTB |= 0b00000100; // assert EN (enable)
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    PORTB &= 0b11111011; // deassert EN (disable)
+}
+
+
+/**
+ *  \brief   Write LCD Data
+ *
+ *  This function sends a byte of data to the LCD
+ *
+ *  \param  (byte) d: byte of data to be sent to the LCD
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
+void writeLCDData(char d)
+{
+    lcdDelay();
+    PORTD = d;
+    PORTB |= 0b00000001; // assert RS (register select) to select data register
+    PORTB &= 0b11111101; // set R/~W to 0 (write)
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    PORTB |= 0b00000100; // assert EN (enable)
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    PORTB &= 0b11111011; // deassert EN (disable)
+}
+
+
+/**
+ *  \brief   Write LCD string
+ *
+ *  This function writes a string of length 16 to the LCD.
+ *
+ *  \param  None
+ *
+ *  \return None
+ *
+ *  \note   The string is stored in the global array LCDString.
+ */
 void writeLCDString()
 {
     writeLCDCommand(0b00000001);
@@ -120,6 +170,18 @@ void writeLCDString()
 }
 
 
+/**
+ *  \brief   Update LCD Data
+ *
+ *  This function updates the LCD data for the reflow oven
+ *
+ *  \param  (unsigned int) m: current mode of the state machine
+ *          (unsigned int) temp: temperature of the reflow oven
+ *
+ *  \return None
+ *
+ *  \note   None
+ */
 void updateLCDData(unsigned int m ,unsigned int temp)
 {
     unsigned int i;
