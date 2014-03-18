@@ -90,7 +90,7 @@ void setPIDVal(int s)
  *  \param  (int) dt: elapsed time since last PID step
  *          (int) currentVal: current value of system
  *
- *  \return None
+ *  \return returns the sum of the P, I, and D terms
  *
  *  \note   None
  */
